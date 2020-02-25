@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fundtransfer
+  labels:
+    app: fundtransfer
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      name: fundtransfer
+  selector:
+    app: fundtransfer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fundtransfer
+  labels:
+    app: fundtransfer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fundtransfer
+  template:
+    metadata:
+      labels:
+        app: fundtransfer
+    spec:
+      containers:
+      - name: fundtransfer
+        image: de.icr.io/icici-demo/fundtransfer:1.2
+        ports:
+        - containerPort: 8080
+
+---        
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: funtra-ingress
+  namespace: default
+  annotations:
+    ingress.bluemix.net/client-max-body-size: "200m"
+    ingress.bluemix.net/proxy-read-timeout: "300s"
+    ingress.bluemix.net/proxy-connect-timeout: "300s"
+spec:
+  rules:
+  - host: singlegeokubamssas.ams03.containers.appdomain.cloud
+    http:
+      paths:
+      - path: 
+        backend:
+          serviceName: fundtransfer
+          servicePort: 8080
+  tls:
+  - hosts:
+    - singlegeokubamssas.eu-central.containers.mybluemix.net
+    secretName: singlegeokubamssas-appdomain
+---
